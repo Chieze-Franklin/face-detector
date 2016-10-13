@@ -5,7 +5,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
@@ -25,7 +24,10 @@ public class MainActivity extends AppCompatActivity {
     Bitmap defaultBitmap;
     Bitmap temporaryBitmap;
     Bitmap eyePatchBitmap;
+    Bitmap leftToothBitmap;
+    Bitmap rightToothBitmap;
     Canvas canvas;
+    int viewID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +38,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void processImage(View view) {
+
+        viewID = view.getId();
 
         BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
         bitmapOptions.inMutable = true;
@@ -74,6 +78,10 @@ public class MainActivity extends AppCompatActivity {
                 .getHeight(), Bitmap.Config.RGB_565);
         eyePatchBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.eye_patch,
                 bitmapOptions);
+        leftToothBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.left_tooth,
+                bitmapOptions);
+        rightToothBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.right_tooth,
+                bitmapOptions);
     }
 
     private void createRectanglePaint() {
@@ -88,14 +96,14 @@ public class MainActivity extends AppCompatActivity {
         for (int i = 0; i < sparseArray.size(); i++) {
             Face face = sparseArray.valueAt(i);
 
-            float left = face.getPosition().x;
-            float top = face.getPosition().y;
-            float right = left + face.getWidth();
-            float bottom = right + face.getHeight();
-            float cornerRadius = 2.0f;
+            //float left = face.getPosition().x;
+            //float top = face.getPosition().y;
+            //float right = left + face.getWidth();
+            //float bottom = right + face.getHeight();
+            //float cornerRadius = 2.0f;
 
-            RectF rectF = new RectF(left, top, right, bottom);
-            canvas.drawRoundRect(rectF, cornerRadius, cornerRadius, rectPaint);
+            //RectF rectF = new RectF(left, top, right, bottom);
+            //canvas.drawRoundRect(rectF, cornerRadius, cornerRadius, rectPaint);
 
             detectLandmarks(face);
         }
@@ -107,11 +115,14 @@ public class MainActivity extends AppCompatActivity {
             int cx = (int) (landmark.getPosition().x);
             int cy = (int) (landmark.getPosition().y);
 
-            canvas.drawCircle(cx, cy, 10, rectPaint);
+            //canvas.drawCircle(cx, cy, 10, rectPaint);
 
-            drawLandmarkType(landmark.getType(), cx, cy);
+            //drawLandmarkType(landmark.getType(), cx, cy);
 
-            drawEyePatchBitmap(landmark.getType(), cx, cy);
+            if(viewID == R.id.pirate_button)
+                drawEyePatchBitmap(landmark.getType(), cx, cy);
+            else if(viewID == R.id.dracula_button)
+                drawVampTeethBitmap(landmark.getType(), cx, cy);
         }
     }
 
@@ -124,6 +135,15 @@ public class MainActivity extends AppCompatActivity {
     private void drawEyePatchBitmap(int landmarkType, float cx, float cy) {
         if (landmarkType == 4) {
             canvas.drawBitmap(eyePatchBitmap, cx - 270, cy - 250, null);
+        }
+    }
+
+    private void drawVampTeethBitmap(int landmarkType, float cx, float cy) {
+        if (landmarkType == 11) { //left (mirror) tooth
+            canvas.drawBitmap(leftToothBitmap, cx - 10, cy - 10, null);
+        }
+        else if (landmarkType == 5) { //right (mirror) tooth
+            canvas.drawBitmap(rightToothBitmap, cx - 2, cy - 2, null); //landmark 5 seems more accurate than 11
         }
     }
 }
